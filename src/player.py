@@ -28,7 +28,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, dt: int):
         # Know if we are falling or not
-        self.grounded = self.game.conveyor.collides(self.dest_rect) is not None
+        self.grounded = self.game.conveyor.collides_floor(self.dest_rect) is not None
 
         self.__handle_y_direction(dt)
 
@@ -37,9 +37,13 @@ class Player(pygame.sprite.Sprite):
             (pygame.time.get_ticks() / (60 * self.slowness_factor)) % self.nb_frames) if dt > 0 else 0
 
         if not self.grounded:
-            collider = self.game.conveyor.collides(self.dest_rect)
+            collider = self.game.conveyor.collides_floor(self.dest_rect)
             if collider is not None:
                 self.ground_touched(collider.dest_rect)
+
+        obstacle = self.game.conveyor.collides_obstacle(self.dest_rect.center)
+        if obstacle is not None:
+            self.dest_rect.x = obstacle.dest_rect.x - self.dest_rect.w
 
         if self.bounce:
             self.__handle_bounce(dt)
