@@ -41,7 +41,7 @@ class Player(pygame.sprite.Sprite):
             if collider is not None:
                 self.ground_touched(collider.dest_rect)
 
-        obstacle = self.game.conveyor.collides_obstacle(self.dest_rect.center)
+        obstacle = self.game.conveyor.collides_obstacle(self.dest_rect)
         if obstacle is not None:
             self.dest_rect.x = obstacle.dest_rect.x - self.dest_rect.w
 
@@ -72,7 +72,7 @@ class Player(pygame.sprite.Sprite):
         norm = self.tick_bounce / bounce_duration  # Normaliser le temps (0 → 1)
 
         if norm < 0.3 and self.grounded:
-            scale_x = 1 + 0.2 * math.sin(norm * math.pi * 4)
+            scale_x = 1 + 0.1 * math.sin(norm * math.pi * 5)
             scale_y = 1
         else:
             scale_x, scale_y = 1, 1
