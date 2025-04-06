@@ -46,12 +46,10 @@ class Obstacle(pygame.sprite.Sprite):
         dx = self.dest_rect.centerx - rect.centerx
         dy = self.dest_rect.centery - rect.centery
 
-        if intersection.w > intersection.h:
-            # Vertical intersection
-            side = Side.TOP if dy > 0 else Side.BOTTOM
-        else:
-            # Horizontal intersection
+        if intersection.h > rect.height / 2:
             side = Side.LEFT if dx > 0 else Side.RIGHT
+        else:
+            side = Side.TOP if dy > 0 else Side.BOTTOM
         return side
 
 
@@ -108,11 +106,15 @@ class Conveyor:
 
         return floor
 
-    def collides_obstacle(self, rect: pygame.rect.Rect) -> Obstacle | None:
-        return next(
-            (obstacle for obstacle in self.obstacles if obstacle.collides_side(rect) == Side.LEFT),
-            None
-        )
+    def collides_obstacle(self, rect: pygame.rect.Rect) -> dict[str, Obstacle]:
+        collisions = [Side.BOTTOM, Side.LEFT, Side.RIGHT]
+        returned_dict = dict()
+        for obstacle in self.obstacles:
+            side = obstacle.collides_side(rect)
+            if side in collisions:
+                returned_dict[side] = obstacle
+
+        return returned_dict
 
     def __add_obstacle(self):
         obstacle_x = max(self.screen_size[0], max([o.dest_rect.x for o in self.obstacles]))

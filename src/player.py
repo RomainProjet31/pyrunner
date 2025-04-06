@@ -1,8 +1,10 @@
 import math
 
 import pygame.sprite
-from pygame import K_SPACE, Surface
+from pygame import K_SPACE, Surface, K_RIGHT, K_LEFT
 
+from src.conveyor import Obstacle
+from src.enums import Side
 from src.sprite_constants import PLAYER_JUMP_FORCE, PLAYER_RUN, PLAYER_RUN_FRAMES_NUMBER, PLAYER_SIZE, \
     PLAYER_RUN_FRAMES_DIMENSIONS
 
@@ -25,6 +27,7 @@ class Player(pygame.sprite.Sprite):
         self.bounce = False
         self.tick_bounce = 0
         self.grounded = True
+        self.collides = False
 
     def update(self, dt: int):
         # Know if we are falling or not
@@ -41,14 +44,25 @@ class Player(pygame.sprite.Sprite):
             if collider is not None:
                 self.ground_touched(collider.dest_rect)
 
-        obstacle = self.game.conveyor.collides_obstacle(self.dest_rect)
-        if obstacle is not None:
-            self.dest_rect.x = obstacle.dest_rect.x - self.dest_rect.w
+        obstacles: dict[str, Obstacle] = self.game.conveyor.collides_obstacle(self.dest_rect)
+        self.collides = False
+        for key in obstacles.keys():
+            obstacle = obstacles[key]
+            if key == Side.LEFT:
+                self.collides = True
+                self.dest_rect.x = obstacle.dest_rect.x - self.dest_rect.w
+            elif key == Side.BOTTOM:
+                self.collides = True
+                self.current_thrust = 0
+                self.dest_rect.y = obstacle.dest_rect.bottom
 
         if self.bounce:
             self.__handle_bounce(dt)
 
     def draw(self, screen: Surface):
+        if self.dest_rect.right < screen.get_width() / 2 and self.grounded and not self.collides:
+            self.dest_rect.x += 1
+
         screen.blit(self.frames[self.idx_frame], (self.dest_rect.x, self.dest_rect.y))
 
     def ground_touched(self, rect: pygame.rect.Rect):
