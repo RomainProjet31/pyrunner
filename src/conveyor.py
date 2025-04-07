@@ -46,10 +46,16 @@ class Obstacle(pygame.sprite.Sprite):
         dx = self.dest_rect.centerx - rect.centerx
         dy = self.dest_rect.centery - rect.centery
 
-        if intersection.h > rect.height / 2:
+        overlap_x = (rect.width + self.dest_rect.width) - abs(dx)
+        overlap_y = (rect.height + self.dest_rect.height / 2) - abs(dy)
+
+        if intersection.w < intersection.h:
             side = Side.LEFT if dx > 0 else Side.RIGHT
         else:
             side = Side.TOP if dy > 0 else Side.BOTTOM
+
+        if side != Side.BOTTOM and side != Side.TOP:
+            print(f"{side} {overlap_x} {overlap_y}")
         return side
 
 
@@ -68,6 +74,8 @@ class Conveyor:
             self.grasses.append(Grass(i * GRASS_SIZE, floor_y))
             if i == 5:
                 self.obstacles.append(Obstacle(i * GRASS_SIZE, floor_y - GRASS_SIZE))
+            elif i == 6:
+                self.obstacles.append(Obstacle(i * GRASS_SIZE, floor_y - GRASS_SIZE * 2))
 
     def update(self, dt: int):
         self.score_timer += dt

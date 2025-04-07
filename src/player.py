@@ -45,16 +45,53 @@ class Player(pygame.sprite.Sprite):
                 self.ground_touched(collider.dest_rect)
 
         obstacles: dict[str, Obstacle] = self.game.conveyor.collides_obstacle(self.dest_rect)
-        self.collides = False
-        for key in obstacles.keys():
-            obstacle = obstacles[key]
-            if key == Side.LEFT:
-                self.collides = True
-                self.dest_rect.x = obstacle.dest_rect.x - self.dest_rect.w
-            elif key == Side.BOTTOM:
-                self.collides = True
-                self.current_thrust = 0
-                self.dest_rect.y = obstacle.dest_rect.bottom
+
+        head = pygame.rect.Rect(
+            self.dest_rect.x,
+            self.dest_rect.y,
+            self.dest_rect.w,
+            self.dest_rect.h / 3
+        )
+        feet = pygame.rect.Rect(
+            self.dest_rect.x,
+            self.dest_rect.y + 2 * self.dest_rect.h / 3,
+            self.dest_rect.w,
+            self.dest_rect.h / 3
+        )
+        right = pygame.rect.Rect(
+            self.dest_rect.x + 2 * self.dest_rect.w / 3,
+            self.dest_rect.y + self.dest_rect.h / 3,
+            self.dest_rect.w / 3,
+            self.dest_rect.h / 3
+        )
+
+        rects = [o.dest_rect for o in self.game.conveyor.obstacles]
+        head_collision_idx = head.collidelist(rects)
+        feet_collision_idx = feet.collidelist(rects)
+        right_collision_idx = right.collidelist(rects)
+
+        if head_collision_idx != -1 and self.current_thrust > 0:
+            self.current_thrust = 0
+            self.dest_rect.y = self.game.conveyor.obstacles[head_collision_idx].dest_rect.bottom
+        elif feet_collision_idx != -1 and self.current_thrust < 0:
+            self.current_thrust = 0
+            self.dest_rect.y = self.game.conveyor.obstacles[feet_collision_idx].dest_rect.y - self.dest_rect.h
+        elif right_collision_idx != -1:
+            self.dest_rect.x = self.game.conveyor.obstacles[head_collision_idx].dest_rect.x - self.dest_rect.w
+
+        # self.collides = False
+        # for key in obstacles.keys():
+        #     obstacle = obstacles[key]
+        #     if not key == Side.TOP:
+        #         self.collides = True
+        #
+        #     if key == Side.LEFT:
+        #         self.dest_rect.x = obstacle.dest_rect.x - self.dest_rect.w
+        #     elif key == Side.BOTTOM:
+        #         self.current_thrust = 0
+        #         self.dest_rect.y = obstacle.dest_rect.bottom
+        #     elif key == Side.RIGHT:
+        #         self.dest_rect.x = obstacle.dest_rect.right
 
         if self.bounce:
             self.__handle_bounce(dt)
@@ -79,6 +116,11 @@ class Player(pygame.sprite.Sprite):
             self.current_thrust -= dt / 5
 
         self.dest_rect.y -= self.current_thrust
+
+        if keys[K_RIGHT]:
+            self.dest_rect.x += 10
+        elif keys[K_LEFT]:
+            self.dest_rect.x -= 10
 
     def __handle_bounce(self, dt: int):
         self.tick_bounce += dt
