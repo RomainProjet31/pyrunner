@@ -17,8 +17,12 @@ def init_game() -> Game:
 DAY = [120, 154, 241]
 NIGHT = [36, 43, 61]
 current_color = [NIGHT[0], NIGHT[1], NIGHT[2]]
+
+changing_timer = 150
+stay_timer = 500
+
 day_tick = 0
-timer_day_changer = 150
+timer_day_changer = changing_timer
 to_day = False
 
 game = init_game()
@@ -33,6 +37,9 @@ while running:
 
     day_tick += dt
     if day_tick >= timer_day_changer:
+        if timer_day_changer == stay_timer:
+            timer_day_changer = changing_timer
+
         day_tick = 0
         comparator = DAY if to_day else NIGHT
         goal = True
@@ -46,6 +53,7 @@ while running:
 
         if goal:
             to_day = not to_day
+            timer_day_changer = stay_timer
 
     screen.fill((current_color[0], current_color[1], current_color[2]))
     game.draw(screen)
