@@ -14,8 +14,11 @@ def init_game() -> Game:
     return tmp_game
 
 
-DAY = [120, 154, 241]
-NIGHT = [36, 43, 61]
+DAY = [120, 154, 241] # 515
+NIGHT = [36, 43, 61] # 140 27
+
+ratio = NIGHT[0] + NIGHT[1] + NIGHT[2] / DAY[0] + DAY[1] + DAY[2]
+
 current_color = [NIGHT[0], NIGHT[1], NIGHT[2]]
 
 changing_timer = 150
@@ -33,7 +36,9 @@ while running:
         if event.type == QUIT:
             running = 0
 
-    game.update(dt)
+    percent = (current_color[0] + current_color[1] + current_color[2] /DAY[0] + DAY[1] + DAY[2]) - ratio
+
+    game.update(dt, percent >= 50)
 
     day_tick += dt
     if day_tick >= timer_day_changer:

@@ -3,8 +3,6 @@ import math
 import pygame.sprite
 from pygame import K_SPACE, Surface, K_RIGHT, K_LEFT
 
-from src.conveyor import Obstacle
-from src.enums import Side
 from src.sprite_constants import PLAYER_JUMP_FORCE, PLAYER_RUN, PLAYER_RUN_FRAMES_NUMBER, PLAYER_SIZE, \
     PLAYER_RUN_FRAMES_DIMENSIONS
 
@@ -28,71 +26,16 @@ class Player(pygame.sprite.Sprite):
         self.tick_bounce = 0
         self.grounded = True
         self.collides = False
+        self.feet = pygame.rect.Rect(0, 0, 0, 0)
+        self.head = pygame.rect.Rect(0, 0, 0, 0)
+        self.right = pygame.rect.Rect(0, 0, 0, 0)
+        self.left = pygame.rect.Rect(0, 0, 0, 0)
 
     def update(self, dt: int):
-        # Know if we are falling or not
-        self.grounded = self.game.conveyor.collides_floor(self.dest_rect) is not None
-
         self.__handle_y_direction(dt)
-
-        # if not self.bounce:
+        self.__compute_side_collision()
         self.idx_frame = int(
             (pygame.time.get_ticks() / (60 * self.slowness_factor)) % self.nb_frames) if dt > 0 else 0
-
-        if not self.grounded:
-            collider = self.game.conveyor.collides_floor(self.dest_rect)
-            if collider is not None:
-                self.ground_touched(collider.dest_rect)
-
-        obstacles: dict[str, Obstacle] = self.game.conveyor.collides_obstacle(self.dest_rect)
-
-        head = pygame.rect.Rect(
-            self.dest_rect.x,
-            self.dest_rect.y,
-            self.dest_rect.w,
-            self.dest_rect.h / 3
-        )
-        feet = pygame.rect.Rect(
-            self.dest_rect.x,
-            self.dest_rect.y + 2 * self.dest_rect.h / 3,
-            self.dest_rect.w,
-            self.dest_rect.h / 3
-        )
-        right = pygame.rect.Rect(
-            self.dest_rect.x + 2 * self.dest_rect.w / 3,
-            self.dest_rect.y + self.dest_rect.h / 3,
-            self.dest_rect.w / 3,
-            self.dest_rect.h / 3
-        )
-
-        rects = [o.dest_rect for o in self.game.conveyor.obstacles]
-        head_collision_idx = head.collidelist(rects)
-        feet_collision_idx = feet.collidelist(rects)
-        right_collision_idx = right.collidelist(rects)
-
-        if head_collision_idx != -1 and self.current_thrust > 0:
-            self.current_thrust = 0
-            self.dest_rect.y = self.game.conveyor.obstacles[head_collision_idx].dest_rect.bottom
-        elif feet_collision_idx != -1 and self.current_thrust < 0:
-            self.current_thrust = 0
-            self.dest_rect.y = self.game.conveyor.obstacles[feet_collision_idx].dest_rect.y - self.dest_rect.h
-        elif right_collision_idx != -1:
-            self.dest_rect.x = self.game.conveyor.obstacles[head_collision_idx].dest_rect.x - self.dest_rect.w
-
-        # self.collides = False
-        # for key in obstacles.keys():
-        #     obstacle = obstacles[key]
-        #     if not key == Side.TOP:
-        #         self.collides = True
-        #
-        #     if key == Side.LEFT:
-        #         self.dest_rect.x = obstacle.dest_rect.x - self.dest_rect.w
-        #     elif key == Side.BOTTOM:
-        #         self.current_thrust = 0
-        #         self.dest_rect.y = obstacle.dest_rect.bottom
-        #     elif key == Side.RIGHT:
-        #         self.dest_rect.x = obstacle.dest_rect.right
-
         if self.bounce:
             self.__handle_bounce(dt)
 
@@ -101,6 +44,13 @@ class Player(pygame.sprite.Sprite):
             self.dest_rect.x += 1
 
         screen.blit(self.frames[self.idx_frame], (self.dest_rect.x, self.dest_rect.y))
+        # self.__draw_debug_sides(screen)
+
+    def __draw_debug_sides(self, screen: Surface):
+        pygame.draw.rect(screen, (15, 150, 10), self.head)
+        pygame.draw.rect(screen, (15, 150, 10), self.right)
+        pygame.draw.rect(screen, (15, 150, 10), self.feet)
+        pygame.draw.rect(screen, (15, 150, 10), self.left)
 
     def ground_touched(self, rect: pygame.rect.Rect):
         self.dest_rect.y = rect.y - self.dest_rect.h + 1
@@ -108,12 +58,69 @@ class Player(pygame.sprite.Sprite):
         self.grounded = True
         self.bounce = True
 
+    def __compute_side_collision(self):
+        rects = self.game.conveyor.get_colliders()
+
+        if self.current_thrust >= 0:
+            self.__check_top(rects)
+            self.__check_feet(rects)
+        else:
+            self.__check_feet(rects)
+            self.__check_top(rects)
+
+        self.right = pygame.rect.Rect(
+            self.dest_rect.x + 2 * self.dest_rect.w / 3,
+            self.dest_rect.y + self.dest_rect.h / 3,
+            self.dest_rect.w / 3,
+            self.dest_rect.h / 3
+        )
+        self.left = pygame.rect.Rect(
+            self.dest_rect.x,
+            self.dest_rect.y + self.dest_rect.h / 3,
+            self.dest_rect.w / 3,
+            self.dest_rect.h / 3
+        )
+        right_collision_idx = self.right.collidelist(rects)
+        left_collision_idx = self.left.collidelist(rects)
+
+        if right_collision_idx != -1:
+            self.dest_rect.x = rects[right_collision_idx].x - self.dest_rect.w - 1
+
+        if left_collision_idx != -1:
+            self.dest_rect.x = rects[left_collision_idx].right + 1
+
+    def __check_top(self, colliders: list[pygame.rect.Rect]):
+        self.head = pygame.rect.Rect(
+            self.dest_rect.x + self.dest_rect.w / 3,
+            self.dest_rect.y,
+            self.dest_rect.w / 3,
+            self.dest_rect.h / 3
+        )
+        head_collision_idx = self.head.collidelist(colliders)
+        if head_collision_idx != -1:
+            self.current_thrust = 0
+            self.dest_rect.y = colliders[head_collision_idx].bottom + 10
+
+    def __check_feet(self, colliders: list[pygame.rect.Rect]):
+        self.feet = pygame.rect.Rect(
+            self.dest_rect.x + self.dest_rect.w / 3,
+            self.dest_rect.y + 2 * self.dest_rect.h / 3,
+            self.dest_rect.w / 3,
+            self.dest_rect.h / 3
+        )
+        feet_collision_idx = self.feet.collidelist(colliders)
+        self.grounded = feet_collision_idx != -1
+        if self.grounded:
+            self.current_thrust = 0
+            self.dest_rect.y = colliders[feet_collision_idx].y - self.dest_rect.h
+
     def __handle_y_direction(self, dt: int):
         keys = pygame.key.get_pressed()
-        if keys[K_SPACE] and self.current_thrust == 0:
+
+        if not self.grounded:
+            self.current_thrust -= dt / 3
+        elif keys[K_SPACE]:
             self.current_thrust = PLAYER_JUMP_FORCE
-        elif not self.grounded:
-            self.current_thrust -= dt / 5
 
         self.dest_rect.y -= self.current_thrust
 

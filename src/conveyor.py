@@ -3,7 +3,6 @@ import random
 import pygame.sprite
 from pygame import Surface
 
-from src.enums import Side
 from src.sprite_constants import GRASS_SPRITE, GRASS_SIZE, OBSTACLE_SIZE, OBSTACLE_SPRITE
 
 
@@ -38,26 +37,6 @@ class Obstacle(pygame.sprite.Sprite):
     def draw(self, screen: Surface):
         screen.blit(self.image, self.dest_rect)
 
-    def collides_side(self, rect: pygame.rect.Rect) -> Side:
-        intersection = self.dest_rect.clip(rect)
-        if intersection.w == intersection.h == 0:
-            return Side.NONE
-
-        dx = self.dest_rect.centerx - rect.centerx
-        dy = self.dest_rect.centery - rect.centery
-
-        overlap_x = (rect.width + self.dest_rect.width) - abs(dx)
-        overlap_y = (rect.height + self.dest_rect.height / 2) - abs(dy)
-
-        if intersection.w < intersection.h:
-            side = Side.LEFT if dx > 0 else Side.RIGHT
-        else:
-            side = Side.TOP if dy > 0 else Side.BOTTOM
-
-        if side != Side.BOTTOM and side != Side.TOP:
-            print(f"{side} {overlap_x} {overlap_y}")
-        return side
-
 
 class Conveyor:
     def __init__(self, screen_size: tuple):
@@ -65,7 +44,7 @@ class Conveyor:
         self.grasses: list[Grass] = []
         self.screen_size = screen_size
         self.rand = random.Random()
-        self.conveyor_speed = 1
+        self.conveyor_speed = 10
         self.score_timer = 0
         self.obstacle_timer = 0
 
@@ -101,28 +80,13 @@ class Conveyor:
         for obstacle in self.obstacles:
             obstacle.draw(screen)
 
-    def collides_floor(self, rect: pygame.rect.Rect) -> Grass | None:
-        floor = next(
-            (grass for grass in self.grasses if rect.colliderect(grass.dest_rect)),
-            None
-        )
-        if floor is None:
-            floor = next(
-                (obstacle for obstacle in self.obstacles if obstacle.collides_side(rect) == Side.TOP),
-                None
-            )
-
-        return floor
-
-    def collides_obstacle(self, rect: pygame.rect.Rect) -> dict[str, Obstacle]:
-        collisions = [Side.BOTTOM, Side.LEFT, Side.RIGHT]
-        returned_dict = dict()
+    def get_colliders(self) -> list[pygame.rect.Rect]:
+        result = []
         for obstacle in self.obstacles:
-            side = obstacle.collides_side(rect)
-            if side in collisions:
-                returned_dict[side] = obstacle
-
-        return returned_dict
+            result.append(obstacle.dest_rect)
+        for grass in self.grasses:
+            result.append(grass.dest_rect)
+        return result
 
     def __add_obstacle(self):
         obstacle_x = max(self.screen_size[0], max([o.dest_rect.x for o in self.obstacles]))
