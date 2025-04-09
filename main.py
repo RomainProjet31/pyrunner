@@ -5,7 +5,7 @@ from src.game import Game
 
 pygame.init()
 clock = pygame.time.Clock()
-screen = pygame.display.set_mode((640, 480))
+screen = pygame.display.set_mode((640, 480), vsync=1)
 
 
 def init_game() -> Game:
@@ -29,6 +29,8 @@ while running:
             game = init_game()
 
     game.update(dt)
+
+    screen.fill((0, 0, 0))
     game.draw(screen)
     pygame.display.flip()
     dt = clock.tick(30)

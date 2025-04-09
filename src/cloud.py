@@ -11,7 +11,7 @@ class Cloud:
         self.layer = layer
         self.is_day = True
         self.only_night = only_night
-        current_size = CLOUD_SIZE / layer
+        current_size = int(CLOUD_SIZE / layer)
         self.center = pygame.rect.Rect(x + 2 * current_size, y, current_size, current_size)
         """
         Will help us to convert the cloud into a star

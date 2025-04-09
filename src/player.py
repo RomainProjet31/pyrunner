@@ -81,13 +81,9 @@ class Player(pygame.sprite.Sprite):
             self.dest_rect.h / 3
         )
         right_collision_idx = self.right.collidelist(rects)
-        left_collision_idx = self.left.collidelist(rects)
 
         if right_collision_idx != -1:
             self.dest_rect.x = rects[right_collision_idx].x - self.dest_rect.w - 1
-
-        if left_collision_idx != -1:
-            self.dest_rect.x = rects[left_collision_idx].right + 1
 
     def __check_top(self, colliders: list[pygame.rect.Rect]):
         self.head = pygame.rect.Rect(
