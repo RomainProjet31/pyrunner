@@ -1,3 +1,4 @@
+import pygame
 from pygame import Surface
 
 from src.cloud import Cloud, get_clouds_parallax
@@ -5,7 +6,7 @@ from src.color_manager import ColorManager
 from src.conveyor import Conveyor
 from src.local_text import LocalText
 from src.player import Player
-from src.sprite_constants import PLAYER_SIZE, WHITE, BLACK, GRAY, RED
+from src.sprite_constants import PLAYER_SIZE, WHITE, BLACK, GRAY, RED, GAME_OVER_MUSIC, GAME_LOOP_MUSIC
 
 
 class Game:
@@ -25,6 +26,8 @@ class Game:
         self.score_text = LocalText(self.__get_ui_score_updated(), BLACK, (self.screen_size[0] / 2, 20))
         self.game_over_text = LocalText("GAME OVER", BLACK, (self.screen_size[0] / 2, self.screen_size[1] / 2), GRAY)
         self.restart_text = LocalText("Press [r] to restart", WHITE, (self.screen_size[0] / 2, self.screen_size[1] / 3))
+        pygame.mixer.music.load(GAME_LOOP_MUSIC)
+        pygame.mixer.music.play(loops=-1)
 
     def update(self, dt: int):
         day = self.color_manager.update(dt, self.game_over)
@@ -42,6 +45,9 @@ class Game:
                 cloud.update(self.conveyor.conveyor_speed, self.screen_size[0], day)
 
             if self.player.dest_rect.right < 0:
+                pygame.mixer.music.stop()
+                pygame.mixer.music.load(GAME_OVER_MUSIC)
+                pygame.mixer.music.play()
                 self.game_over = True
                 self.score_text.update_color(WHITE)
                 self.game_over_text.update_color(RED, BLACK)
