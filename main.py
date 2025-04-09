@@ -14,53 +14,21 @@ def init_game() -> Game:
     return tmp_game
 
 
-DAY = [120, 154, 241] # 515
-NIGHT = [36, 43, 61] # 140 27
-
-ratio = NIGHT[0] + NIGHT[1] + NIGHT[2] / DAY[0] + DAY[1] + DAY[2]
-
-current_color = [NIGHT[0], NIGHT[1], NIGHT[2]]
-
-changing_timer = 150
-stay_timer = 500
-
-day_tick = 0
-timer_day_changer = changing_timer
-to_day = False
-
 game = init_game()
 dt = 0
-running = 1
+running = True
+
 while running:
     for event in pygame.event.get():
         if event.type == QUIT:
-            running = 0
+            running = False
 
-    percent = (current_color[0] + current_color[1] + current_color[2] /DAY[0] + DAY[1] + DAY[2]) - ratio
+    if game.game_over:
+        keys = pygame.key.get_pressed()
+        if keys[K_r]:
+            game = init_game()
 
-    game.update(dt, percent >= 50)
-
-    day_tick += dt
-    if day_tick >= timer_day_changer:
-        if timer_day_changer == stay_timer:
-            timer_day_changer = changing_timer
-
-        day_tick = 0
-        comparator = DAY if to_day else NIGHT
-        goal = True
-        for i in range(len(current_color)):
-            if current_color[i] < comparator[i]:
-                current_color[i] += 1
-                goal = False
-            elif current_color[i] > comparator[i]:
-                current_color[i] -= 1
-                goal = False
-
-        if goal:
-            to_day = not to_day
-            timer_day_changer = stay_timer
-
-    screen.fill((current_color[0], current_color[1], current_color[2]))
+    game.update(dt)
     game.draw(screen)
     pygame.display.flip()
     dt = clock.tick(30)

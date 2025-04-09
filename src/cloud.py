@@ -7,44 +7,47 @@ from src.sprite_constants import CLOUD_SIZE, STAR_SIZE
 
 
 class Cloud:
-    def __init__(self, x: float, y: float, layer: int = 1):
+    def __init__(self, x: float, y: float, layer: int = 1, only_night: bool = False):
         self.layer = layer
         self.is_day = True
+        self.only_night = only_night
         current_size = CLOUD_SIZE / layer
         self.center = pygame.rect.Rect(x + 2 * current_size, y, current_size, current_size)
         """
         Will help us to convert the cloud into a star
         """
         self.shape: list[pygame.rect.Rect] = [
+            # First floor
             pygame.rect.Rect(x, y, current_size, current_size),
             pygame.rect.Rect(x + current_size, y, current_size, current_size),
             self.center,
             pygame.rect.Rect(x + 3 * current_size, y, current_size, current_size),
-            # 2nd floor
+            # Second Floor
             pygame.rect.Rect(x + current_size, y - current_size, current_size, current_size),
             pygame.rect.Rect(x + 2 * current_size, y - current_size, current_size, current_size),
-            # Sub floor
+            # Basement
             pygame.rect.Rect(x + current_size, y + current_size, current_size, current_size),
             pygame.rect.Rect(x + 2 * current_size, y + current_size, current_size, current_size),
         ]
 
     def update(self, speed: int, screen_width: int, is_day: bool):
-        in_screen = False
-        for r in self.shape:
-            r.x -= speed / (10 * self.layer)
-            if r.right >= 0:
-                in_screen = True
+        if not self.only_night or not is_day:
+            in_screen = False
+            for rect in self.shape:
+                rect.x -= speed / (10 * self.layer)
+                if rect.right >= 0:
+                    in_screen = True
 
-        if not in_screen:
-            for r in self.shape:
-                r.x += screen_width
+            if not in_screen:
+                for rect in self.shape:
+                    rect.x += screen_width
 
         self.is_day = is_day
 
     def draw(self, screen: Surface):
         if self.is_day:
-            for r in self.shape:
-                pygame.draw.rect(screen, (255, 255, 255), r)
+            for rect in self.shape:
+                pygame.draw.rect(screen, (255, 255, 255), rect)
         else:
             pygame.draw.rect(
                 screen,
@@ -56,9 +59,15 @@ class Cloud:
 def get_clouds_parallax(screen_size: tuple[float, float]) -> list[Cloud]:
     clouds = []
     nb_clouds = random.randint(4, 5)
-    for _ in range(nb_clouds):
+
+    for _ in range(random.randint(10, 100)):
         x = random.randint(0, int(screen_size[0]))
         y = random.randint(0, int(screen_size[1] / 2))
         layer = random.randint(1, 5)
-        clouds.append(Cloud(x, y, layer))
+        if nb_clouds > 0:
+            nb_clouds -= 1
+            only_night = False
+        else:
+            only_night = True
+        clouds.append(Cloud(x, y, layer, only_night))
     return clouds
