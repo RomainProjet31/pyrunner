@@ -33,8 +33,10 @@ class ColorManager:
         current_ratio = self.current_color[0] + self.current_color[1] + self.current_color[2] / DAY[0] + DAY[1] + DAY[2]
         return current_ratio - self.ratio >= 50 and not game_over
 
-    def draw(self, screen: Surface):
-        screen.fill((self.current_color[0], self.current_color[1], self.current_color[2]))
+    def draw(self, screen: Surface, forced_color: tuple[int, int, int] = None):
+        current_color = (self.current_color[0], self.current_color[1], self.current_color[2]) \
+            if not forced_color else forced_color
+        screen.fill(current_color)
 
     def __handle_day_n_night_cycle(self, dt: int, comparator: list[int]) -> None:
         self.day_tick += dt

@@ -19,8 +19,9 @@ dt = 0
 running = True
 
 while running:
-    for event in pygame.event.get():
-        if event.type == QUIT:
+    events = pygame.event.get()
+    for event in events:
+        if event.type == QUIT or (event.type == KEYDOWN and event.type == K_ESCAPE):
             running = False
 
     if game.game_over:
@@ -28,7 +29,7 @@ while running:
         if keys[K_r]:
             game = init_game()
 
-    game.update(dt)
+    game.update(dt, events)
 
     screen.fill((0, 0, 0))
     game.draw(screen)

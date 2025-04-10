@@ -1,7 +1,7 @@
 import math
 
 import pygame.sprite
-from pygame import K_SPACE, Surface, K_RIGHT, K_LEFT
+from pygame import K_SPACE, Surface
 
 from src.sprite_constants import PLAYER_JUMP_FORCE, PLAYER_RUN, PLAYER_RUN_FRAMES_NUMBER, PLAYER_SIZE, \
     PLAYER_RUN_FRAMES_DIMENSIONS
@@ -119,11 +119,6 @@ class Player(pygame.sprite.Sprite):
             self.current_thrust = PLAYER_JUMP_FORCE
 
         self.dest_rect.y -= self.current_thrust
-
-        if keys[K_RIGHT]:
-            self.dest_rect.x += 10
-        elif keys[K_LEFT]:
-            self.dest_rect.x -= 10
 
     def __handle_bounce(self, dt: int):
         self.tick_bounce += dt
