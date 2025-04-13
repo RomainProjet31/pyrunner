@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 
-from src.game import Game
+from src.managers.game import Game
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -29,11 +29,10 @@ while running:
         if keys[K_r]:
             game = init_game()
 
-    game.update(dt, events)
-
     screen.fill((0, 0, 0))
+    game.update(dt, events)
     game.draw(screen)
     pygame.display.flip()
-    dt = clock.tick(30)
+    dt = clock.tick(60)
 
 pygame.quit()

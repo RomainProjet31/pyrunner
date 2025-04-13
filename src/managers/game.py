@@ -1,14 +1,14 @@
 import pygame
-from pygame import Surface, K_p
+from pygame import Surface
 from pygame.event import Event
 
-from src.cloud import Cloud, get_clouds_parallax
-from src.color_manager import ColorManager
-from src.conveyor import Conveyor
-from src.local_text import LocalText
-from src.menu import Menu
-from src.player import Player
-from src.simple_image import SimpleImage
+from src.sprite.cloud import Cloud, get_clouds_parallax
+from src.gui.color_manager import ColorManager
+from src.managers.conveyor import Conveyor
+from src.gui.local_text import LocalText
+from src.gui.menu import Menu
+from src.sprite.player import Player
+from src.sprite.simple_image import SimpleImage
 from src.sprite_constants import PLAYER_SIZE, WHITE, BLACK, GRAY, RED, GAME_OVER_MUSIC, GAME_LOOP_MUSIC, NIGHT, \
     RANDOM_IMAGE, RANDOM_IMAGE_DIMENSIONS
 
@@ -42,6 +42,7 @@ class Game:
         )
         pygame.mixer.music.load(GAME_LOOP_MUSIC)
         pygame.mixer.music.play(loops=-1)
+        self.screen = None
 
     def update(self, dt: int, events: list[Event]):
         day = self.color_manager.update(dt, self.game_over)
@@ -52,6 +53,9 @@ class Game:
             self.menu.update(events)
 
     def draw(self, screen: Surface):
+        if not self.screen:
+            self.screen = screen
+
         color = NIGHT if self.menu.display else None
         self.color_manager.draw(screen, color)
         if self.menu.display:
@@ -66,7 +70,7 @@ class Game:
         new_score = None
         if not self.game_over:
             self.conveyor.update(dt)
-            self.player.update(dt)
+            self.player.update(dt, self.conveyor.get_colliders())
 
             if self.last_score != self.conveyor.conveyor_speed:
                 self.last_score = self.conveyor.conveyor_speed
@@ -76,6 +80,7 @@ class Game:
                 cloud.update(self.conveyor.conveyor_speed, self.screen_size[0], day)
 
             if self.player.dest_rect.right < 0:
+                self.player.dest_rect.x = self.screen_size[0] / 2
                 pygame.mixer.music.stop()
                 pygame.mixer.music.load(GAME_OVER_MUSIC)
                 pygame.mixer.music.play()

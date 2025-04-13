@@ -2,8 +2,8 @@ import pygame
 from pygame import Surface, KEYDOWN
 from pygame.locals import K_p
 
-from src.local_text import LocalText
-from src.sprite_constants import WHITE, PAUSE_SOUND, GAME_LOOP_MUSIC
+from src.gui.local_text import LocalText
+from src.sprite_constants import WHITE, PAUSE_SOUND
 
 
 class Menu:
