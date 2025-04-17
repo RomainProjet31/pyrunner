@@ -30,11 +30,11 @@ class Cloud:
             pygame.rect.Rect(x + 2 * current_size, y + current_size, current_size, current_size),
         ]
 
-    def update(self, speed: int, screen_width: int, is_day: bool):
+    def update(self, step: int, screen_width: int, is_day: bool):
         if not self.only_night or not is_day:
             in_screen = False
             for rect in self.shape:
-                rect.x -= speed / (10 * self.layer)
+                rect.x -= step
                 if rect.right >= 0:
                     in_screen = True
 

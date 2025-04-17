@@ -24,10 +24,7 @@ class LocalText:
         self.position = position
         self.step = 1
 
-    def update(self, new_text: str = None):
-        if new_text is not None and new_text is not self.value:
-            self.value = new_text
-
+    def update(self):
         for i in range(len(self.color)):
             if self.color[i] < self.goal_color[i]:
                 self.color[i] += self.step

@@ -13,9 +13,11 @@ class Conveyor:
         self.grasses: list[LocalSprite] = []
         self.screen_size = screen_size
         self.rand = random.Random()
-        self.conveyor_speed = 2
+        self.conveyor_speed = 5
         self.score_timer = 0
         self.obstacle_timer = 0
+        self.time_level = 1000
+        self.score = 0
 
         for i in range(int(screen_size[0] / GRASS_SIZE) + 1):  # Handle empty grass
             floor_y = screen_size[1] - GRASS_SIZE
@@ -30,17 +32,22 @@ class Conveyor:
 
     def update(self, dt: int):
         self.score_timer += dt
-        if self.score_timer % 1000 <= 30:  # Each 5 seconds
-            self.conveyor_speed += 1
+        if self.score_timer % self.time_level < dt:
+            self.score += 1
+            self.score_timer = 0
+            self.time_level += 500
+            if self.score % 5 == 0 and self.conveyor_speed < 10:
+                self.conveyor_speed += 1
 
+        step = self.conveyor_speed
         next_x = max(self.grasses, key=lambda curr_grass: curr_grass.dest_rect.x).dest_rect.x + GRASS_SIZE
         for grass in self.grasses:
             if grass.dest_rect.x + GRASS_SIZE <= 0:
                 grass.dest_rect.x = next_x
-            grass.dest_rect.x -= dt * self.conveyor_speed / 100
+            grass.dest_rect.x -= step
 
         for obstacle in self.obstacles:
-            obstacle.dest_rect.x -= dt * self.conveyor_speed / 100
+            obstacle.dest_rect.x -= step
             if obstacle.dest_rect.x + obstacle.dest_rect.w <= 0:
                 obstacle.alive = False
 

@@ -18,6 +18,7 @@ class LocalSprite(pygame.sprite.Sprite):
 
     def update(self, dt: int, colliders: list[pygame.rect.Rect] = None) -> None:
         if self.collides and colliders:
+            self.grounded = False
             self.__compute_collision(colliders)
             if not self.grounded:
                 self.vel.y += dt / 10
@@ -29,18 +30,17 @@ class LocalSprite(pygame.sprite.Sprite):
         pygame.draw.rect(screen, (255, 255, 255), self.dest_rect)
 
     def __compute_collision(self, world_colliders: list[pygame.rect.Rect]):
-        print(f"Au début {self.vel}")
         self.dest_rect.x += self.vel.x
         for rect in world_colliders:
+            vec = (rect.centerx - self.dest_rect.centerx)
             if self.dest_rect.colliderect(rect):
-                if self.vel.x >= 0:
-                    self.dest_rect.x = rect.left - self.dest_rect.w
-                elif self.vel.x < 0:
-                    self.dest_rect.left = rect.right
+                if vec >= 0:
+                    self.dest_rect.x = rect.left - self.dest_rect.w - 1
+                elif vec < 0:
+                    self.dest_rect.left = rect.right + 1
                 self.vel.x = 0
 
         self.dest_rect.y += self.vel.y
-        self.grounded = False
         for rect in world_colliders:
             if self.dest_rect.colliderect(rect):
                 if self.vel.y > 0:
@@ -49,4 +49,3 @@ class LocalSprite(pygame.sprite.Sprite):
                 elif self.vel.y < 0:
                     self.dest_rect.top = rect.bottom
                 self.vel.y = 0
-        print(f"A la fin {self.vel}")

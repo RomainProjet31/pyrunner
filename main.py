@@ -20,19 +20,23 @@ running = True
 
 while running:
     events = pygame.event.get()
+    keys = pygame.key.get_pressed()
+
     for event in events:
-        if event.type == QUIT or (event.type == KEYDOWN and event.type == K_ESCAPE):
+        if event.type == QUIT or keys[K_ESCAPE]:
             running = False
+            break
 
-    if game.game_over:
-        keys = pygame.key.get_pressed()
-        if keys[K_r]:
-            game = init_game()
+    if game.game_over and keys[K_r]:
+        game = init_game()
 
-    screen.fill((0, 0, 0))
-    game.update(dt, events)
-    game.draw(screen)
-    pygame.display.flip()
-    dt = clock.tick(60)
+    if running:
+        screen.fill((0, 0, 0))
+        game.update(dt, events)
+        game.draw(screen)
+        pygame.display.flip()
+        dt = clock.tick(60)
+    else:
+        game.stop_game()
 
 pygame.quit()

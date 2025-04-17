@@ -12,7 +12,7 @@ class SimpleImage(pygame.sprite.Sprite):
 
         self.jump = jump
         self.step_x = 5
-        self.max_jump = 50
+        self.max_jump = 30
 
         if self.jump:
             x = self.step_x

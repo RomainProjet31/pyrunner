@@ -2,11 +2,12 @@ import pygame
 from pygame import Surface
 from pygame.event import Event
 
-from src.sprite.cloud import Cloud, get_clouds_parallax
 from src.gui.color_manager import ColorManager
-from src.managers.conveyor import Conveyor
 from src.gui.local_text import LocalText
-from src.gui.menu import Menu
+from src.gui.menus import PauseMenu, StartMenu
+from src.managers.conveyor import Conveyor
+from src.sprite.background import Background, background_speed
+from src.sprite.cloud import Cloud, get_clouds_parallax
 from src.sprite.player import Player
 from src.sprite.simple_image import SimpleImage
 from src.sprite_constants import PLAYER_SIZE, WHITE, BLACK, GRAY, RED, GAME_OVER_MUSIC, GAME_LOOP_MUSIC, NIGHT, \
@@ -17,20 +18,20 @@ class Game:
     def __init__(self, screen_size: tuple):
         self.started = False
         self.screen_size = screen_size
-        self.conveyor = Conveyor(screen_size)
         self.color_manager = ColorManager()
+        self.conveyor = Conveyor(screen_size)
+        self.bg = Background(self.screen_size)
 
         player_y = self.conveyor.grasses[0].dest_rect.y - PLAYER_SIZE + 1
         player_x = self.conveyor.grasses[3].dest_rect.x
         self.player = Player((player_x, player_y), self)
-        self.last_score = 0
 
         self.clouds: list[Cloud] = get_clouds_parallax(screen_size)
         self.game_over = False
-        self.score_text = LocalText(self.__get_ui_score_updated(), BLACK, (self.screen_size[0] / 2, 20))
+        self.score_text = LocalText(self.__get_ui_score_updated(), GRAY, (self.screen_size[0] / 2, 20))
+        self.bg_score_text = pygame.rect.Rect(0, 0, self.screen_size[0], self.score_text.text.get_height() + 1)
         self.game_over_text = LocalText("GAME OVER", BLACK, (self.screen_size[0] / 2, self.screen_size[1] / 2), GRAY)
         self.restart_text = LocalText("Press [r] to restart", WHITE, (self.screen_size[0] / 2, self.screen_size[1] / 3))
-        self.menu = Menu(screen_size)
 
         self.random_image = SimpleImage(
             path=RANDOM_IMAGE,
@@ -42,42 +43,52 @@ class Game:
         )
         pygame.mixer.music.load(GAME_LOOP_MUSIC)
         pygame.mixer.music.play(loops=-1)
-        self.screen = None
+        pygame.mixer.music.pause()
+        self.pause_menu = PauseMenu(screen_size)
+        self.start_menu = StartMenu(screen_size)
 
     def update(self, dt: int, events: list[Event]):
-        day = self.color_manager.update(dt, self.game_over)
-        if not self.menu.display:
-            self.__update_game(dt, day)
+        if self.start_menu.display:
+            self.start_menu.update(events)
+        else:
+            if not self.game_over:
+                self.pause_menu.update(events)
 
-        if not self.game_over:
-            self.menu.update(events)
+            day = self.color_manager.update(dt, self.game_over)
+            if not self.pause_menu.display:
+                self.__update_game(dt, day)
 
     def draw(self, screen: Surface):
-        if not self.screen:
-            self.screen = screen
-
-        color = NIGHT if self.menu.display else None
+        color = NIGHT if self.pause_menu.display else None
         self.color_manager.draw(screen, color)
-        if self.menu.display:
-            self.menu.draw(screen)
+
+        if self.start_menu.display:
+            self.start_menu.draw(screen)
+        elif self.pause_menu.display:
+            self.pause_menu.draw(screen)
         else:
             self.__draw_game(screen)
 
-    def __get_ui_score_updated(self) -> str:
-        return f"Score: {int(self.conveyor.conveyor_speed / 10)}"
+    def stop_game(self):
+        self.player.alive = False
+        pygame.mixer.stop()
 
     def __update_game(self, dt: int, day: bool):
-        new_score = None
+        speed = self.conveyor.conveyor_speed
         if not self.game_over:
+            self.bg.update(dt, speed)
             self.conveyor.update(dt)
             self.player.update(dt, self.conveyor.get_colliders())
 
-            if self.last_score != self.conveyor.conveyor_speed:
-                self.last_score = self.conveyor.conveyor_speed
-                new_score = self.__get_ui_score_updated()
-
             for cloud in self.clouds:
-                cloud.update(self.conveyor.conveyor_speed, self.screen_size[0], day)
+                if not cloud.only_night:
+                    step = max(
+                        background_speed(speed),
+                        speed / cloud.layer
+                    )
+                else:
+                    step = 1
+                cloud.update(step, self.screen_size[0], day)
 
             if self.player.dest_rect.right < 0:
                 self.player.dest_rect.x = self.screen_size[0] / 2
@@ -90,14 +101,25 @@ class Game:
         else:
             self.random_image.update(dt, self.screen_size)
 
-        self.score_text.update(new_score)
+        self.score_text.value = self.__get_ui_score_updated()
+        self.score_text.update()
         self.game_over_text.update()
+
+    def __get_ui_score_updated(self) -> str:
+        return f"Score: {self.conveyor.score}"
 
     def __draw_game(self, screen: Surface):
         if not self.game_over:
-            for cloud in self.clouds:
-                if not cloud.is_day or not cloud.only_night:
-                    cloud.draw(screen)
+            stars = [star for star in self.clouds if star.only_night and not star.is_day]
+            clouds = [cloud for cloud in self.clouds if not cloud.only_night and cloud.is_day]
+
+            for star in stars:
+                star.draw(screen)
+
+            self.bg.draw(screen)
+
+            for cloud in clouds:
+                cloud.draw(screen)
 
             self.conveyor.draw(screen)
             self.player.draw(screen)
@@ -107,4 +129,5 @@ class Game:
                 self.restart_text.draw(screen)
             self.random_image.draw(screen)
 
+        pygame.draw.rect(screen, BLACK, self.bg_score_text)
         self.score_text.draw(screen)
