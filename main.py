@@ -2,10 +2,13 @@ import pygame
 from pygame.locals import *
 
 from src.managers.game import Game
+from src.sprite_constants import ICON
 
 pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((640, 480), vsync=1)
+pygame.display.set_caption("Infinite runner")
+pygame.display.set_icon(pygame.image.load(ICON))
 
 
 def init_game() -> Game:

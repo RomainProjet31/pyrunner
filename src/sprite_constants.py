@@ -2,6 +2,7 @@
 ASSETS = "assets"
 
 # SPRITES
+ICON = f"{ASSETS}/icon.PNG"
 GRASS_SPRITE = f"{ASSETS}/grass.png"
 OBSTACLE_SPRITE = f"{ASSETS}/obstacle.png"
 BALDUR_ADVENTURE = f"{ASSETS}/TheBaldur_Adventure"
@@ -42,5 +43,6 @@ DAY = [120, 154, 241]  # 515
 NIGHT = [36, 43, 61]  # 140 => 140 / 515 = 27
 RED = [165, 22, 22]
 BLACK = [0, 0, 0]
+
 # PHYSICS
 PLAYER_JUMP_FORCE = 25

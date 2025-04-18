@@ -2,10 +2,12 @@ import pygame
 from pygame import Surface
 from pygame.event import Event
 
+from src.game_properties_constants import Properties
 from src.gui.color_manager import ColorManager
 from src.gui.local_text import LocalText
 from src.gui.menus import PauseMenu, StartMenu
 from src.managers.conveyor import Conveyor
+from src.managers.game_informations import read, write
 from src.sprite.background import Background, background_speed
 from src.sprite.cloud import Cloud, get_clouds_parallax
 from src.sprite.player import Player
@@ -70,8 +72,18 @@ class Game:
             self.__draw_game(screen)
 
     def stop_game(self):
-        self.player.alive = False
+        self.__save_game()
         pygame.mixer.stop()
+        self.player.alive = False
+
+    def __save_game(self):
+        if not self.start_menu.display:
+            # Only when the game is over after started, otherwise it'll always be 0
+            max_score = read(Properties.MAX_SCORE)
+            d_props: dict[Properties, any] = {Properties.LAST_SCORE: self.conveyor.score}
+            if not max_score or int(max_score) < self.conveyor.score:
+                d_props.update({Properties.MAX_SCORE: self.conveyor.score})
+            write(d_props)
 
     def __update_game(self, dt: int, day: bool):
         speed = self.conveyor.conveyor_speed
@@ -96,6 +108,7 @@ class Game:
                 pygame.mixer.music.load(GAME_OVER_MUSIC)
                 pygame.mixer.music.play()
                 self.game_over = True
+                self.__save_game()
                 self.score_text.update_color(WHITE)
                 self.game_over_text.update_color(RED, BLACK)
         else:
