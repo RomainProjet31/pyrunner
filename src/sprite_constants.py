@@ -1,21 +1,23 @@
 # ASSETS
-ASSETS = "assets"
+from src.resource_manager import resource_path
+
+ASSETS = resource_path("assets")
 
 # SPRITES
-ICON = f"{ASSETS}/icon.PNG"
-GRASS_SPRITE = f"{ASSETS}/grass.png"
-OBSTACLE_SPRITE = f"{ASSETS}/obstacle.png"
-BALDUR_ADVENTURE = f"{ASSETS}/TheBaldur_Adventure"
-PLAYER_SPRITE_SHEETS = f"{BALDUR_ADVENTURE}/Adventurer/Spritesheets"
-PLAYER_IDLE = f"{PLAYER_SPRITE_SHEETS}/Adventurer_Idle.png"
-PLAYER_RUN = f"{PLAYER_SPRITE_SHEETS}/Adventurer_Running.png"
-PLAYER_JUMP = f"{PLAYER_SPRITE_SHEETS}/Adventurer_Flying.png"
-RANDOM_IMAGE = f"{ASSETS}/lol.png"
-BACKGROUND_IMAGE = f"{ASSETS}/bg_gpt.png"
+ICON = f"{ASSETS}\\icon.PNG"
+GRASS_SPRITE = f"{ASSETS}\\grass.png"
+OBSTACLE_SPRITE = f"{ASSETS}\\obstacle.png"
+BALDUR_ADVENTURE = f"{ASSETS}\\TheBaldur_Adventure"
+PLAYER_SPRITE_SHEETS = f"{BALDUR_ADVENTURE}\\Adventurer\\Spritesheets"
+PLAYER_IDLE = f"{PLAYER_SPRITE_SHEETS}\\Adventurer_Idle.png"
+PLAYER_RUN = f"{PLAYER_SPRITE_SHEETS}\\Adventurer_Running.png"
+PLAYER_JUMP = f"{PLAYER_SPRITE_SHEETS}\\Adventurer_Flying.png"
+RANDOM_IMAGE = f"{ASSETS}\\lol.png"
+BACKGROUND_IMAGE = f"{ASSETS}\\bg_gpt.png"
 # MUSIC
-GAME_LOOP_MUSIC = f"{ASSETS}/loop_music.mp3"
-GAME_OVER_MUSIC = f"{ASSETS}/pwned.mp3"
-PAUSE_SOUND = f"{ASSETS}/pause.mp3"
+GAME_LOOP_MUSIC = f"{ASSETS}\\loop_music.mp3"
+GAME_OVER_MUSIC = f"{ASSETS}\\pwned.mp3"
+PAUSE_SOUND = f"{ASSETS}\\pause.mp3"
 
 # SPRITE CONFIGURATION
 PLAYER_IDLE_FRAMES_NUMBER = 5
@@ -40,7 +42,7 @@ OBSTACLE_SIZE = 64
 WHITE = [255, 255, 255]
 GRAY = [150, 150, 150]
 DAY = [120, 154, 241]  # 515
-NIGHT = [36, 43, 61]  # 140 => 140 / 515 = 27
+NIGHT = [36, 43, 61]  # 140 => 140 \\ 515 = 27
 RED = [165, 22, 22]
 BLACK = [0, 0, 0]
 

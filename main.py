@@ -10,6 +10,8 @@ screen = pygame.display.set_mode((640, 480), vsync=1)
 pygame.display.set_caption("Infinite runner")
 pygame.display.set_icon(pygame.image.load(ICON))
 
+#pyinstaller --onefile --add-data "assets;assets" main.py
+
 
 def init_game() -> Game:
     tmp_game = Game((screen.get_width(), screen.get_height()))

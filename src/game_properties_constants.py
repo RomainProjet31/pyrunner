@@ -1,7 +1,9 @@
 # PROPERTIES
 from enum import Enum
 
-GAME_PROPERTIES_FILE = f"assets/save/game"
+from src.resource_manager import resource_path
+
+GAME_PROPERTIES_FILE = resource_path("assets/save/game")
 
 
 class Properties(Enum):

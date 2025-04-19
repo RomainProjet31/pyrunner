@@ -18,7 +18,7 @@ def read_all_props() -> dict[str, any]:
 def read(prop: Properties) -> any:
     props = read_all_props()
     if prop.value in props:
-        match = re.match(r"^\d$", props[prop.value])
+        match = re.match(r"^\d*", props[prop.value])
         return match.group(0) if match else None
     else:
         return None
